@@ -21,6 +21,10 @@ import com.udacity.vehicles.domain.manufacturer.Manufacturer;
 import com.udacity.vehicles.service.CarService;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +37,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 /**
  * Implements testing of the CarController class.
@@ -96,7 +102,14 @@ public class CarControllerTest {
          *   the whole list of vehicles. This should utilize the car from `getCar()`
          *   below (the vehicle will be the first in the list).
          */
-
+        Car car = getCar();
+        car.setId(1L);
+        ResultActions resultActions = mvc.perform(get(new URI("/cars"))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8));
+        resultActions.andExpect(status().isOk());
+        resultActions.andExpect(jsonPath("$._embedded.carList", hasSize(1)));
+        resultActions.andExpect(jsonPath("$._embedded.carList[0].id", is(car.getId().intValue())));
     }
 
     /**
@@ -106,9 +119,16 @@ public class CarControllerTest {
     @Test
     public void findCar() throws Exception {
         /**
-         * TODO: Add a test to check that the `get` method works by calling
-         *   a vehicle by ID. This should utilize the car from `getCar()` below.
+         * Add a test to check that the `get` method works by calling
+         * a vehicle by ID. This should utilize the car from `getCar()` below.
          */
+        Car car = getCar();
+        car.setId(1L);
+        ResultActions resultActions = mvc.perform(get(new URI("/cars/1"))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8));
+        resultActions.andExpect(status().isOk());
+        resultActions.andExpect(content().json(json.write(car).getJson()));
     }
 
     /**
@@ -122,6 +142,10 @@ public class CarControllerTest {
          *   when the `delete` method is called from the Car Controller. This
          *   should utilize the car from `getCar()` below.
          */
+        ResultActions resultActions = mvc.perform(delete("/cars/1")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8));
+        resultActions.andExpect(status().isNoContent());
     }
 
     /**
